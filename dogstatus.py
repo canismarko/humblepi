@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Keep track of when our dog goes outside. The LCD color will change
 depending on how long it's been since he's been outisde and pooped.
 
@@ -7,12 +6,13 @@ depending on how long it's been since he's been outisde and pooped.
 import time
 import csv
 from datetime import datetime as dt
-import socket
 import os
 
 import numpy as np
 import Adafruit_CharLCD as LCD
 import RPi.GPIO as GPIO
+
+from basestatus import BaseStatus
 
 # Limits for when he should be outside
 BEST_OUTSIDE = 6.
@@ -38,17 +38,9 @@ ERROR_COLOR = RED
 
 DECIMALS = 1 # How many decimal places to round (eg. 3 decimals means 0.001 precision)
 ALERT_FREQ = 1 # in flashes per second
-TICK = 0.1 # sleep time in seconds to prevent excessive button presses
 SEC_PER_HOUR = 3600 # default: 3600
 
    
-def ipaddr():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    addr = s.getsockname()[0]
-    s.close()
-    return addr
-
 def severity(current, best, maxx):
     severity = (current - best) / (maxx - best)
     normed = min(max(severity, 0.), 1.)
@@ -67,8 +59,7 @@ def color(outside, pooping):
         out = GOOD_COLOR
     return out
 
-class Dog():
-    lcd = LCD.Adafruit_CharLCDPlate()
+class Dog(BaseStatus):
     last_pooping = dt.now()
     last_outside = dt.now()
     _status_pooping = None
@@ -76,6 +67,23 @@ class Dog():
     flash_status = True
     logfile = "/home/mwolf/sheffield-bathroom-log.tsv"
     datetime_fmt = "%Y-%m-%d %H:%M:%S"
+
+    def __init__(self, lcd):
+        self.lcd = lcd
+        # Load the latest data from the log file
+        self.load_datetimes()
+
+    def pressed_select(self):
+        """The dog has pooped."""
+        self.register_trip(pooped=True)
+    
+    def pressed_left(self):
+        """The dog has peed."""
+        self.register_trip(pooped=True)
+    
+    def pressed_right(self):
+        """The dog has peed."""
+        self.register_trip(pooped=False)        
 
     def load_datetimes(self):
         """Read the latest datetime stamps from the log file."""
@@ -93,7 +101,6 @@ class Dog():
             self.last_pooping = dt.strptime(last_poop, self.datetime_fmt)
 
     def register_trip(self, pooped):
-        self.lcd.set_backlight(0)
         self.last_outside = dt.now()
         if pooped:
             self.last_pooping = dt.now()
@@ -102,16 +109,7 @@ class Dog():
             line = '{timestamp}\t{pooped}\n'
             line = line.format(timestamp=dt.now().strftime(self.datetime_fmt), pooped=pooped)
             f.write(line)
-        # Wait for user to release buttons
-        btns = [LCD.SELECT, LCD.LEFT, LCD.UP, LCD.DOWN, LCD.RIGHT]
-        while True:
-            pressed = False
-            for btn in btns:
-                if self.lcd.is_pressed(btn):
-                    pressed = True
-            if not pressed:
-                self.lcd.set_backlight(1)
-                break
+        self.update_lcd(force=True)
 
     def elapsed_seconds(self, datetime_):
         out = datetime_.days * 3600 * 24 + datetime_.seconds + datetime_.microseconds / 1000000.
@@ -151,49 +149,14 @@ class Dog():
         self.lcd.set_color(*c)
         # Update the LCD
         self.lcd.clear()
-        msg = 'Outside: {:.%df}h\nPooping: {:.%df}h' % (DECIMALS, DECIMALS)
+        msg = 'Outside: {:.%df}h\n' % DECIMALS
+        msg += 'Pooping: {:.%df}h' % DECIMALS
         msg = msg.format(outside, pooping)
         self.lcd.message(msg)
         # Reset status variables
         self._status_pooping = pooping
         self._status_outside = outside
 
-    def button_loop(self):
-        while True:
-            if self.lcd.is_pressed(LCD.RIGHT):
-                # Button is pressed, dog has peed
-                self.register_trip(False)
-                time.sleep(TICK)
-            if self.lcd.is_pressed(LCD.SELECT):
-                # Button is pressed, dog has pooped
-                self.register_trip(True)
-                time.sleep(TICK)
-            if self.lcd.is_pressed(LCD.UP):
-                # Show the user the current IP address
-                self.lcd.clear()
-                self.lcd.message(ipaddr())
-                time.sleep(3)
-                self.update_lcd(force=True)
-            # Update the LCD display based on current dog status
-            self.update_lcd()
 
-    def show_exception(self, e):
-        # Notify user of exception
-        self.lcd.set_color(*ERROR_COLOR)
-        self.lcd.clear()
-        # Prepare message from exception
-        name = e.__class__.__name__
-        CHARS = 16
-        if len(name) >= CHARS:
-            name = "{}\n{}".format(name[:CHARS], name[CHARS:])
-        self.lcd.message(name)
         
 
-# Begin a loop that responds to button presses and updates LCD
-sheffield = Dog()
-sheffield.load_datetimes()
-try:
-    sheffield.button_loop()
-except BaseException as e:
-    sheffield.show_exception(e)
-    raise

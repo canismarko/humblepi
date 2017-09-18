@@ -12,22 +12,13 @@ import numpy as np
 import Adafruit_CharLCD as LCD
 import RPi.GPIO as GPIO
 
-from basestatus import BaseStatus
+from basestatus import BaseStatus, WHITE, RED, GREEN, BLUE, CYAN, MAGENTA, YELLOW
 
 # Limits for when he should be outside
 BEST_OUTSIDE = 6.
 MAX_OUTSIDE = 10.
 BEST_POOPING = 18.
 MAX_POOPING = 28.
-
-# Color definitions
-WHITE = (1., 1., 1.)
-RED = (1., 0., 0.)
-GREEN = (0., 1., 0.)
-BLUE = (0., 0., 1.)
-CYAN = (0., 1., 1.)
-MAGENTA = (1., 0., 1.)
-YELLOW = (1., 1., 0.)
 
 # Color selections
 GOOD_COLOR = WHITE
@@ -66,7 +57,6 @@ class Dog(BaseStatus):
     _status_outside = None
     flash_status = True
     logfile = "/home/mwolf/sheffield-bathroom-log.tsv"
-    datetime_fmt = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self, lcd):
         self.lcd = lcd

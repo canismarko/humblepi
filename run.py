@@ -7,6 +7,7 @@ import Adafruit_CharLCD as LCD
 
 from dogstatus import Dog, ERROR_COLOR
 from ipstatus import IPStatus
+from smokestatus import SmokeStatus
 
 TICK = 0.1 # sleep time in seconds to prevent excessive button presses
 
@@ -54,23 +55,25 @@ def button_loop(lcd, statuses):
         if lcd.is_pressed(LCD.LEFT):
             with wait_for_button(lcd):
                 active_status.pressed_left()
-        if lcd.is_pressed(LCD.RIGHT):
+        elif lcd.is_pressed(LCD.RIGHT):
             with wait_for_button(lcd):
                 active_status.pressed_right()
-        if lcd.is_pressed(LCD.SELECT):
+        elif lcd.is_pressed(LCD.SELECT):
             with wait_for_button(lcd):
                 active_status.pressed_select()
         # Change active status on "up" or "down" buttons
-        if lcd.is_pressed(LCD.UP) or lcd.is_pressed(LCD.DOWN):
-            old_idx = statuses.index(active_status)
-            if lcd.is_pressed(LCD.UP):
-                new_idx = (old_idx + 1) % len(statuses)
-            if lcd.is_pressed(LCD.DOWN):
-                new_idx = (old_idx - 1) % len(statuses)                
-            active_status = statuses[new_idx]
-            active_status.update_lcd(force=True)
-        # Update the LCD display based on current dog status
-        active_status.update_lcd()
+        elif lcd.is_pressed(LCD.UP) or lcd.is_pressed(LCD.DOWN):
+            with wait_for_button(lcd):
+                old_idx = statuses.index(active_status)
+                if lcd.is_pressed(LCD.UP):
+                    new_idx = (old_idx + 1) % len(statuses)
+                if lcd.is_pressed(LCD.DOWN):
+                    new_idx = (old_idx - 1) % len(statuses)                
+                active_status = statuses[new_idx]
+                active_status.update_lcd(force=True)
+        else:
+            # Update the LCD display based on current dog status
+            active_status.update_lcd()
 
 
 def main(lcd):
@@ -82,6 +85,8 @@ def main(lcd):
     statuses.append(sheffield)
     ipstatus = IPStatus(lcd=lcd)
     statuses.append(ipstatus)
+    smokestatus = SmokeStatus(lcd=lcd)
+    statuses.append(smokestatus)
 
     # Begin a loop that responds to button presses and updates LCD
     button_loop(lcd, statuses)                    

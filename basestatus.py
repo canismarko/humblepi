@@ -1,3 +1,13 @@
+# Color definitions
+WHITE = (1., 1., 1.)
+RED = (1., 0., 0.)
+GREEN = (0., 1., 0.)
+BLUE = (0., 0., 1.)
+CYAN = (0., 1., 1.)
+MAGENTA = (1., 0., 1.)
+YELLOW = (1., 1., 0.)
+
+
 class BaseStatus():
     """An abstract status stub responding to LCD events.
 
@@ -11,6 +21,7 @@ class BaseStatus():
       A physical display adapter that allows control of a display.
 
     """
+    datetime_fmt = "%Y-%m-%d %H:%M:%S"
     def __init__(self, lcd):
         self.lcd = lcd
 

@@ -16,9 +16,9 @@ from basestatus import BaseStatus, WHITE, RED, GREEN, BLUE, CYAN, MAGENTA, YELLO
 
 # Limits for when he should be outside
 BEST_OUTSIDE = 6.
-MAX_OUTSIDE = 10.
-BEST_POOPING = 24.
-MAX_POOPING = 32.
+MAX_OUTSIDE = 8.
+BEST_POOPING = 18.
+MAX_POOPING = 24.
 
 # Color selections
 GOOD_COLOR = WHITE

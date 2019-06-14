@@ -31,7 +31,8 @@ DECIMALS = 1 # How many decimal places to round (eg. 3 decimals means 0.001 prec
 ALERT_FREQ = 1 # in flashes per second
 SEC_PER_HOUR = 3600 # default: 3600
 
-   
+STATUS_FILE = '/tmp/dogstatus' # A file in which to write the current state
+
 def severity(current, best, maxx):
     severity = (current - best) / (maxx - best)
     normed = min(max(severity, 0.), 1.)
@@ -132,7 +133,17 @@ class Dog(BaseStatus):
         # Update the LCD with new times if necessary
         if do_update:
             self.write_lcd(outside_delta, pooping_delta)
-
+        # Write the current status to the temporary file
+        is_due = (outside_delta > BEST_OUTSIDE or
+                  pooping_delta > BEST_POOPING)
+        with open(STATUS_FILE, mode='w') as f:
+            if flashing:
+                f.write("distress")
+            elif is_due:
+                f.write("due")
+            else:
+                f.write("normal")
+    
     def write_lcd(self, outside, pooping):
         # Determine LCD color based on status values
         c = color(outside, pooping)

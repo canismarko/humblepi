@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
-    <height>320</height>
+    <width>720</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,10 +26,10 @@
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>481</width>
-      <height>281</height>
+      <x>10</x>
+      <y>10</y>
+      <width>701</width>
+      <height>431</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="lytDogButtons">
@@ -43,7 +43,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>20</pointsize>
+         <pointsize>50</pointsize>
         </font>
        </property>
        <property name="styleSheet">
@@ -58,8 +58,8 @@
        </property>
        <property name="iconSize">
         <size>
-         <width>45</width>
-         <height>45</height>
+         <width>90</width>
+         <height>90</height>
         </size>
        </property>
       </widget>
@@ -74,7 +74,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>20</pointsize>
+         <pointsize>50</pointsize>
         </font>
        </property>
        <property name="styleSheet">
@@ -90,8 +90,8 @@
        </property>
        <property name="iconSize">
         <size>
-         <width>45</width>
-         <height>45</height>
+         <width>90</width>
+         <height>90</height>
         </size>
        </property>
        <property name="flat">
@@ -107,7 +107,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>480</width>
+     <width>720</width>
      <height>18</height>
     </rect>
    </property>

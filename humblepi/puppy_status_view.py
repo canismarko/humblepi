@@ -109,7 +109,7 @@ class PuppyStatusView(QtCore.QObject):
         # Update the UI elements
         self.ui.btnPee.highlighted = highlight
         self.ui.btnPee.setIcon(icon)
-        self.ui.btnPee.setIconSize(QtCore.QSize(45,45))
+        self.ui.btnPee.setIconSize(QtCore.QSize(90, 90))
         self.ui.btnPee.setStyleSheet(css)
     
     def style_poop_button(self, highlight=None):
@@ -130,9 +130,11 @@ class PuppyStatusView(QtCore.QObject):
         # Update the UI elements
         self.ui.btnPoop.highlighted = highlight
         self.ui.btnPoop.setIcon(icon)
-        self.ui.btnPoop.setIconSize(QtCore.QSize(45,45))
+        self.ui.btnPoop.setIconSize(QtCore.QSize(90, 90))
         self.ui.btnPoop.setStyleSheet(css)        
     
     def set_layout(self):
         self.window.showFullScreen()
+        # Hide the cursor when over the window
+        self.window.setCursor(QtGui.QCursor(QtCore.Qt.BlankCursor))
         # self.window.showMaximized()

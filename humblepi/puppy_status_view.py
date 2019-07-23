@@ -27,11 +27,11 @@ class PuppyStatusView(QtCore.QObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.load_ui()
-        self.set_layout()
     
     def show(self):
         self.btn_flasher.start(500)
         self.window.show()
+        self.set_layout()
     
     def connect_dog_status(self, status):
         status.pooping.status_changed.connect(self.update_pooping_status)
@@ -134,8 +134,5 @@ class PuppyStatusView(QtCore.QObject):
         self.ui.btnPoop.setStyleSheet(css)        
     
     def set_layout(self):
-        pass
-        # self.window.showFullScreen()
-        # # Add buttons for "Poop" and "Pee"
-        # poop_btn = QPushButton('Poop', self)
-        # pee_btn = QPushButton('Pee', self)
+        self.window.showFullScreen()
+        # self.window.showMaximized()

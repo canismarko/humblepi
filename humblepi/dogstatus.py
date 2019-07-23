@@ -60,7 +60,7 @@ class DogAction(QtCore.QObject):
     _last_time = '--:--'
     seconds_warning = 3600
     seconds_overdue = 3600
-    time_speedup = 60
+    time_speedup = 1
     
     # Signals
     status_changed = pyqtSignal(int)
@@ -98,7 +98,8 @@ class DogAction(QtCore.QObject):
         """Return the time (in seconds) since puppy has taken this action."""
         now = dt.datetime.now()
         elapsed_time = now - self.last_time
-        return int(elapsed_time.total_seconds() * self.time_speedup)
+        seconds = int(elapsed_time.total_seconds() * self.time_speedup)
+        return seconds
     
     def time_string(self) -> str:
         """Prepare a string of how long it's been since puppy went outside."""
@@ -151,10 +152,8 @@ class DogAction(QtCore.QObject):
 
 
 class DogStatus(QtCore.QThread):
-    # peeing = DogAction(seconds_warning=6*3600, seconds_overdue=8*3600)
-    # pooping = DogAction(seconds_warning=18*3600, seconds_overdue=24*3600)
-    peeing = DogAction(seconds_warning=6*60, seconds_overdue=8*60)
-    pooping = DogAction(seconds_warning=18*60, seconds_overdue=24*60)
+    peeing = DogAction(seconds_warning=6*3600, seconds_overdue=8*3600)
+    pooping = DogAction(seconds_warning=18*3600, seconds_overdue=24*3600)
     logfile = "/home/mwolf/sheffield-bathroom-log.tsv"
     datetime_fmt = "%Y-%m-%d %H:%M:%S"
    

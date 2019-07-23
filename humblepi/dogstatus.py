@@ -9,11 +9,16 @@ import datetime as dt
 import os
 from typing import Optional
 import enum
+import configparser
+import logging
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
+from paho.mqtt import client as mqtt_client
 
 from basestatus import BaseStatus, WHITE, RED, GREEN, BLUE, CYAN, MAGENTA, YELLOW
+
+log = logging.getLogger(__name__)
 
 # Limits for when he should be outside
 BEST_OUTSIDE = 6.
@@ -60,7 +65,7 @@ class DogAction(QtCore.QObject):
     _last_time = '--:--'
     seconds_warning = 3600
     seconds_overdue = 3600
-    time_speedup = 1
+    time_speedup = 60
     
     # Signals
     status_changed = pyqtSignal(int)
@@ -151,15 +156,50 @@ class DogAction(QtCore.QObject):
             self._last_time = new_time
 
 
+def load_config():
+    config = configparser.ConfigParser()
+    config['MQTT'] = {
+        'username': '',
+        'password': '',
+        'hostname': 'localhost',
+        'port': 8883,
+        'use_tls': True,
+    }
+    config.read(os.path.expanduser('~/.humblepirc'))
+    return config
+
+
 class DogStatus(QtCore.QThread):
-    peeing = DogAction(seconds_warning=6*3600, seconds_overdue=8*3600)
-    pooping = DogAction(seconds_warning=18*3600, seconds_overdue=24*3600)
+    dog_name = 'sheffield'
+    # peeing = DogAction(seconds_warning=6*3600, seconds_overdue=8*3600)
+    # pooping = DogAction(seconds_warning=18*3600, seconds_overdue=24*3600)
+    peeing = DogAction(seconds_warning=6*60, seconds_overdue=8*60)
+    pooping = DogAction(seconds_warning=18*60, seconds_overdue=24*60)
     logfile = "/home/mwolf/sheffield-bathroom-log.tsv"
     datetime_fmt = "%Y-%m-%d %H:%M:%S"
-   
+    mqtt_client = None
+    
+    def prepare_mqtt(self):
+        config = load_config()['MQTT']
+        # Log into the MQTT client
+        self.mqtt_client = mqtt_client.Client()
+        if config.getboolean('use_tls'):
+            self.mqtt_client.tls_set()
+            log.debug("TLS enabled for MQTT")
+        self.mqtt_client.username_pw_set(
+            username=config['username'],
+            password=config['password'])
+        log.debug("Connecting to MQTT server '%s:%d'",
+                  config['hostname'], config.getint('port'))
+        self.mqtt_client.connect(host=config['hostname'],
+                                 port=config.getint('port'))
+        # Connect signals for MQTT client
+        self.peeing.status_changed.connect(self.update_mqtt)
+        self.pooping.status_changed.connect(self.update_mqtt)
+    
     def run(self):
+        # Start loop waiting for status changes
         while True:
-            # Check if the status has changed
             self.pooping.check_status_change()
             self.peeing.check_status_change()
             time.sleep(1)
@@ -202,3 +242,16 @@ class DogStatus(QtCore.QThread):
         view.poop_button_clicked.connect(self.pooping.reset_time)
         view.poop_button_clicked.connect(self.pooping.check_status_change)
         view.poop_button_clicked.connect(self.log_poop)
+    
+    def update_mqtt(self, new_state=None, client=None):
+        # Determine the most severe state
+        max_state = max(self.pooping.status(), self.peeing.status())
+        # Send the message to the MQTT server
+        topic = 'dogstatus/{}/outside'.format(self.dog_name)
+        payload = max_state.name
+        if client is None:
+            client = self.mqtt_client
+        msg = client.publish(topic=topic, payload=payload)
+        print(topic, payload, msg.is_published())
+        client.reconnect()
+        assert msg.is_published()

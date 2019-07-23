@@ -3,6 +3,7 @@ import datetime as dt
 import time
 
 import unittest
+from unittest import mock
 from PyQt5 import QtWidgets
 from PyQt5.QtTest import QSignalSpy
 
@@ -58,3 +59,10 @@ class DogStatusTest(unittest.TestCase):
         self.assertTrue(status_emitted)
         time_emitted = time_spy.wait(1)
         self.assertTrue(time_emitted)
+    
+    def test_update_mqtt(self):
+        status = DogStatus()
+        client = mock.MagicMock()
+        status.update_mqtt(client=client)
+        client.reconnect.assert_called_with()
+        client.publish.assert_called_with(topic='dogstatus/sheffield/outside', message='NORMAL')

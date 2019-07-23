@@ -18,6 +18,7 @@ if __name__ == "__main__":
     puppy_view.connect_dog_status(dog_status)
     dog_status.connect_puppy_view(puppy_view)
     # Start the status monitors
+    dog_status.prepare_mqtt()
     dog_status.start()
     # Prepare UI
     puppy_view.load_ui()

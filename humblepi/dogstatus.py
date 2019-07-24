@@ -226,7 +226,9 @@ class DogStatus(QtCore.QThread):
             with open(self.logfile) as tsvin:
                 tsvin = csv.reader(tsvin, delimiter='\t')
                 for line in tsvin:
-                    if line[1] == "True":
+                    if line[0][0] == '#':
+                        pass
+                    elif line[1] == "True":
                         last_poop = line[0]
                     else:
                         last_out = line[0]
@@ -251,7 +253,9 @@ class DogStatus(QtCore.QThread):
         payload = max_state.name
         if client is None:
             client = self.mqtt_client
-        msg = client.publish(topic=topic, payload=payload)
-        print(topic, payload, msg.is_published())
         client.reconnect()
-        assert msg.is_published()
+        msg = client.publish(topic=topic, payload=payload)
+        if msg.is_published():
+            log.debug("Message successfully published.")
+        else:
+            log.warning("MQTT message not published.")

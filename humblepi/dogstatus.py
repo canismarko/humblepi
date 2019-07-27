@@ -109,15 +109,11 @@ class DogAction(QtCore.QObject):
     def time_string(self) -> str:
         """Prepare a string of how long it's been since puppy went outside."""
         seconds = self.seconds()
-        days = int(seconds / (24 * 3600))
-        hours = int((seconds % (24 * 3600)) / 3600)
+        hours = int((seconds / 3600))
         minutes = int((seconds % 3600) / 60)
         # Prepare the formatted string
-        if days:
-            fmt = '{days}:{hours:02d}:{minutes:02d}'
-        else:
-            fmt = '{hours}:{minutes:02d}'
-        time_str = fmt.format(days=days, hours=hours, minutes=minutes)
+        fmt = '{hours}:{minutes:02d}'
+        time_str = fmt.format(hours=hours, minutes=minutes)
         return time_str
     
     def status(self) -> int:

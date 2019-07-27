@@ -33,7 +33,7 @@ class DogActionTest(unittest.TestCase):
         target_dt = now - dt.timedelta(seconds=29 * 3600 + 60 * 24)
         action.reset_time(new_time=target_dt)
         self.assertEqual(action.seconds(), 105840)
-        self.assertEqual(action.time_string(), '1:05:24')
+        self.assertEqual(action.time_string(), '29:24')
     
     def test_pee_status(self):
         action = DogAction(seconds_warning=100, seconds_overdue=200)
@@ -55,14 +55,14 @@ class DogStatusTest(unittest.TestCase):
         status_spy = QSignalSpy(status.pooping.status_changed)
         time_spy = QSignalSpy(status.pooping.time_changed)
         status.start()
+        self.assertEqual(len(time_spy), 0)
         status_emitted = status_spy.wait(1)
         self.assertTrue(status_emitted)
-        time_emitted = time_spy.wait(1)
-        self.assertTrue(time_emitted)
+        self.assertEqual(len(time_spy), 1)
     
     def test_update_mqtt(self):
         status = DogStatus()
         client = mock.MagicMock()
         status.update_mqtt(client=client)
         client.reconnect.assert_called_with()
-        client.publish.assert_called_with(topic='dogstatus/sheffield/outside', message='NORMAL')
+        client.publish.assert_called_with(topic='dogstatus/sheffield/outside', payload='NORMAL')

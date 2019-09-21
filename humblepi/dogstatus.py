@@ -6,6 +6,7 @@ depending on how long it's been since he's been outisde and pooped.
 import time
 import csv
 import datetime as dt
+import pytz
 import os
 from typing import Optional
 import enum
@@ -60,7 +61,6 @@ def color(outside, pooping):
 
 
 class DogAction(QtCore.QObject):
-    last_time = dt.datetime.now() # type: dt.datetime
     _last_status = 0
     _last_time = '--:--'
     seconds_warning = 3600
@@ -79,10 +79,22 @@ class DogAction(QtCore.QObject):
         OVERDUE = 3
     
     def __init__(self, seconds_warning: int=3600, seconds_overdue: int=3600, *args, **kwargs):
-        self.last_time = dt.datetime.now()
+        super().__init__(*args, **kwargs)
+        self.last_time = dt.datetime.now(self.timezone)
         self.seconds_warning = seconds_warning
         self.seconds_overdue = seconds_overdue
-        return super().__init__(*args, **kwargs)
+    
+    def __set_name__(self, owner, name):
+        self.owner = owner
+        self.name = name
+    
+    @property
+    def timezone(self):
+        if hasattr(self, 'owner'):
+            timezone = self.owner.timezone
+        else:
+            timezone = pytz.utc
+        return timezone
     
     def reset_time(self,
                    new_time: Optional[dt.datetime]=None):
@@ -96,12 +108,13 @@ class DogAction(QtCore.QObject):
         
         """
         if new_time is None:
-            new_time = dt.datetime.now()
+            new_time = dt.datetime.now(self.timezone)
         self.last_time = new_time
     
     def seconds(self) -> int:
         """Return the time (in seconds) since puppy has taken this action."""
-        now = dt.datetime.now()
+        # Determine correct timezone
+        now = dt.datetime.now(self.timezone)
         elapsed_time = now - self.last_time
         seconds = int(elapsed_time.total_seconds() * self.time_speedup)
         return seconds
@@ -172,8 +185,8 @@ class DogStatus(QtCore.QThread):
     # peeing = DogAction(seconds_warning=6*60, seconds_overdue=8*60)
     # pooping = DogAction(seconds_warning=18*60, seconds_overdue=24*60)
     logfile = "/home/mwolf/sheffield-bathroom-log.tsv"
-    datetime_fmt = "%Y-%m-%d %H:%M:%S"
     mqtt_client = None
+    timezone = pytz.timezone('America/Chicago')
     
     def prepare_mqtt(self):
         config = load_config()['MQTT']
@@ -206,20 +219,43 @@ class DogStatus(QtCore.QThread):
     def log_pee(self):
         self.log_action(pooped=False)
     
-    def log_action(self, pooped=True):
+    def log_action(self, pooped=True, fpath=None, when=None):
+        # Determine default file path and action time if necessary
+        if fpath is None:
+            fpath = self.logfile
+        if when is None:
+            when = dt.datetime.now(self.timezone)
         # Logging
-        with open(self.logfile, 'a') as f:
+        with open(fpath, 'a') as f:
             line = '{timestamp}\t{pooped}\n'
-            line = line.format(timestamp=dt.datetime.now().strftime(self.datetime_fmt), pooped=pooped)
+            line = line.format(timestamp=when.isoformat(), pooped=pooped)
             f.write(line)
     
-    def load_datetimes(self):
-        """Read the latest datetime stamps from the log file."""
-        if os.path.exists(self.logfile):
+    def load_datetimes(self, fpath=None):
+        """Read the latest datetime stamps from the log file.
+        
+        Parameters
+        ==========
+        fpath
+          Path to the log file to be used. If omitted, the value of
+          ``self.logfile`` will be used.
+        
+        Returns
+        =======
+        last_out
+          The datetime when the dog last peed.
+        last_poop
+          The datetime when the dog last pooped.
+        
+        """
+        # Get default filepath if necessary
+        if fpath is None:
+            fpath = self.logfile
+        if os.path.exists(fpath):
             last_poop = None
             last_out = None
             # Read the file
-            with open(self.logfile) as tsvin:
+            with open(fpath) as tsvin:
                 tsvin = csv.reader(tsvin, delimiter='\t')
                 for line in tsvin:
                     if line[0][0] == '#':
@@ -228,10 +264,20 @@ class DogStatus(QtCore.QThread):
                         last_poop = line[0]
                     else:
                         last_out = line[0]
+            # Convert and apply datetimes
+            def format_datetime(when):
+                when = dt.datetime.fromisoformat(when)
+                # Convert naive timezone to aware timezone
+                if when.tzinfo is None:
+                    when = self.timezone.localize(when)
+                return when
             if last_out is not None:
-                self.peeing.reset_time(dt.datetime.strptime(last_out, self.datetime_fmt))
+                last_out = format_datetime(last_out)
+                self.peeing.reset_time(last_out)
             if last_poop is not None:
-                self.pooping.reset_time(dt.datetime.strptime(last_poop, self.datetime_fmt))
+                last_poop = format_datetime(last_poop)
+                self.pooping.reset_time(last_poop)
+        return last_out, last_poop
     
     def connect_puppy_view(self, view):
         view.pee_button_clicked.connect(self.peeing.reset_time)

@@ -80,10 +80,12 @@ class DogStatusTest(unittest.TestCase):
         test_file = 'test-file.tsv'
         t0 = chicago.localize(dt.datetime(2019, 8, 4, 19, 55, 46))
         t1 = chicago.localize(dt.datetime(2019, 8, 5, 2, 59, 42))
+        t2 = chicago.localize(dt.datetime(2019, 8, 3, 14, 33, 12))
         with open(test_file, mode='w') as fp:
             fp.writelines([
                 f'{t0.isoformat()}	True\n',
                 f'{t1.isoformat()}	False\n',
+                f'{t2.isoformat()}	False\n',
             ])
         # Load the datetimes from the file
         status = DogStatus()

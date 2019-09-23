@@ -255,22 +255,13 @@ class DogStatus(QtCore.QThread):
           The datetime when the dog last pooped.
         
         """
+       
         # Get default filepath if necessary
         if fpath is None:
             fpath = self.logfile
         if os.path.exists(fpath):
             last_poop = None
             last_out = None
-            # Read the file
-            with open(fpath) as tsvin:
-                tsvin = csv.reader(tsvin, delimiter='\t')
-                for line in tsvin:
-                    if line[0][0] == '#':
-                        pass
-                    elif line[1] == "True":
-                        last_poop = line[0]
-                    else:
-                        last_out = line[0]
             # Convert and apply datetimes
             def format_datetime(when):
                 when = dt.datetime.fromisoformat(when)
@@ -278,11 +269,22 @@ class DogStatus(QtCore.QThread):
                 if when.tzinfo is None:
                     when = self.timezone.localize(when)
                 return when
+            # Read the file
+            with open(fpath) as tsvin:
+                tsvin = csv.reader(tsvin, delimiter='\t')
+                for line in tsvin:
+                    new_dt = format_datetime(line[0])
+                    is_new_poop = line[1] == "True" and (last_poop is None or new_dt > last_poop)
+                    is_new_pee = (last_out is None or new_dt > last_out)
+                    if line[0][0] == '#':
+                        pass
+                    elif is_new_poop:
+                        last_poop = new_dt
+                    elif is_new_pee:
+                        last_out = new_dt
             if last_out is not None:
-                last_out = format_datetime(last_out)
                 self.peeing.reset_time(last_out, force=True)
             if last_poop is not None:
-                last_poop = format_datetime(last_poop)
                 self.pooping.reset_time(last_poop, force=True)
         return last_out, last_poop
     

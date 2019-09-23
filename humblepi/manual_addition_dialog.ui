@@ -158,7 +158,7 @@
      <x>10</x>
      <y>190</y>
      <width>701</width>
-     <height>61</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="font">
@@ -167,8 +167,8 @@
     </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">QDateTimeEdit::up-button { width:30px; height: 30px; }
-QDateTimeEdit::down-button { width:30px; height: 30px; }</string>
+    <string notr="true">QDateTimeEdit::up-button { width:90px; height: 60px; }
+QDateTimeEdit::down-button { width:90px; height: 60px; }</string>
    </property>
    <property name="displayFormat">
     <string>ddd yyyy-MM-dd HH:mm</string>

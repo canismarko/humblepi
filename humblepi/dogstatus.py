@@ -61,6 +61,7 @@ def color(outside, pooping):
 
 
 class DogAction(QtCore.QObject):
+    name = ''
     _last_status = 0
     _last_time = '--:--'
     seconds_warning = 3600
@@ -97,19 +98,25 @@ class DogAction(QtCore.QObject):
         return timezone
     
     def reset_time(self,
-                   new_time: Optional[dt.datetime]=None):
+                   new_time: Optional[dt.datetime]=None, force=False):
         """Set the current time as the last action time.
         
         Parameters
         ==========
-        new_time :
+        new_time
           The new datetime to set. If ommitted, the current time will
           be used.
+        force
+          If true, the time will be set no matter what, otherwise, the
+          time will only be set if it's newer that the current time.
         
         """
-        if new_time is None:
+        if new_time in [None, True, False]:
             new_time = dt.datetime.now(self.timezone)
-        self.last_time = new_time
+        update_needed = (new_time > self.last_time) or force
+        if update_needed:
+            log.debug('Resetting {} to {}'.format(self.name, new_time))
+            self.last_time = new_time
     
     def seconds(self) -> int:
         """Return the time (in seconds) since puppy has taken this action."""
@@ -213,17 +220,17 @@ class DogStatus(QtCore.QThread):
             self.peeing.check_status_change()
             time.sleep(1)
     
-    def log_poop(self):
-        self.log_action(pooped=True)
+    def log_poop(self, when=None):
+        self.log_action(pooped=True, when=when)
     
-    def log_pee(self):
-        self.log_action(pooped=False)
+    def log_pee(self, when=None):
+        self.log_action(pooped=False, when=when)
     
     def log_action(self, pooped=True, fpath=None, when=None):
         # Determine default file path and action time if necessary
         if fpath is None:
             fpath = self.logfile
-        if when is None:
+        if when in [None, True, False]:
             when = dt.datetime.now(self.timezone)
         # Logging
         with open(fpath, 'a') as f:
@@ -273,10 +280,10 @@ class DogStatus(QtCore.QThread):
                 return when
             if last_out is not None:
                 last_out = format_datetime(last_out)
-                self.peeing.reset_time(last_out)
+                self.peeing.reset_time(last_out, force=True)
             if last_poop is not None:
                 last_poop = format_datetime(last_poop)
-                self.pooping.reset_time(last_poop)
+                self.pooping.reset_time(last_poop, force=True)
         return last_out, last_poop
     
     def connect_puppy_view(self, view):

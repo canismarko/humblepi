@@ -23,79 +23,105 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>6</x>
       <y>10</y>
-      <width>701</width>
+      <width>711</width>
       <height>431</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="lytDogButtons">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QPushButton" name="btnPee">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>50</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: red;</string>
-       </property>
-       <property name="text">
-        <string>Pee</string>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>../../../Pictures/doggo/dog-peeing-icon.svg</normaloff>../../../Pictures/doggo/dog-peeing-icon.svg</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>90</width>
-         <height>90</height>
-        </size>
-       </property>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="btnPee">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>50</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: red;</string>
+         </property>
+         <property name="text">
+          <string>Pee</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../../../Pictures/doggo/dog-peeing-icon.svg</normaloff>../../../Pictures/doggo/dog-peeing-icon.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>90</width>
+           <height>90</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnPoop">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>50</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: purple;
+/* color: white */</string>
+         </property>
+         <property name="text">
+          <string>Poop</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../../../Pictures/doggo/dog-pooping-icon.svg</normaloff>../../../Pictures/doggo/dog-pooping-icon.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>90</width>
+           <height>90</height>
+          </size>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
-      <widget class="QPushButton" name="btnPoop">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+      <widget class="QPushButton" name="btnManualAdd">
        <property name="font">
         <font>
-         <pointsize>50</pointsize>
+         <pointsize>30</pointsize>
         </font>
        </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: purple;
-/* color: white */</string>
-       </property>
        <property name="text">
-        <string>Poop</string>
+        <string>Manual Event</string>
        </property>
        <property name="icon">
         <iconset>
-         <normaloff>../../../Pictures/doggo/dog-pooping-icon.svg</normaloff>../../../Pictures/doggo/dog-pooping-icon.svg</iconset>
+         <normaloff>../../../../../usr/share/icons/Adwaita/scalable/mimetypes/x-office-calendar-symbolic.svg</normaloff>../../../../../usr/share/icons/Adwaita/scalable/mimetypes/x-office-calendar-symbolic.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
-         <width>90</width>
-         <height>90</height>
+         <width>35</width>
+         <height>35</height>
         </size>
-       </property>
-       <property name="flat">
-        <bool>false</bool>
        </property>
       </widget>
      </item>

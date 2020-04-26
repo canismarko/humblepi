@@ -191,7 +191,7 @@ class DogStatus(QtCore.QThread):
     pooping = DogAction(seconds_warning=18*3600, seconds_overdue=24*3600)
     # peeing = DogAction(seconds_warning=6*60, seconds_overdue=8*60)
     # pooping = DogAction(seconds_warning=18*60, seconds_overdue=24*60)
-    logfile = "/home/mwolf/sheffield-bathroom-log.tsv"
+    logfile = os.path.expanduser("~/sheffield-bathroom-log.tsv")
     mqtt_client = None
     timezone = pytz.timezone('America/Chicago')
     

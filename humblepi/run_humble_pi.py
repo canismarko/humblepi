@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
+import logging
+from pathlib import Path
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
@@ -9,7 +11,13 @@ from PyQt5.QtWidgets import QMainWindow
 from humblepi.puppy_status_view import PuppyStatusView
 from humblepi.dogstatus import DogStatus
 
+log = logging.getLogger(__name__)
+
 if __name__ == "__main__":
+    # Prepare logging
+    logfile = Path("~/humlepi.log").expanduser()
+    logging.basicConfig(filename=logfile, level=logging.INFO)
+    # Create the Qt objections
     app = QtWidgets.QApplication(sys.argv)
     puppy_view = PuppyStatusView()
     dog_status = DogStatus()

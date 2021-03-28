@@ -189,8 +189,8 @@ class DogStatus(QtCore.QThread):
     dog_name = 'sheffield'
     peeing = DogAction(seconds_warning=6*3600, seconds_overdue=8*3600)
     pooping = DogAction(seconds_warning=18*3600, seconds_overdue=24*3600)
-    # peeing = DogAction(seconds_warning=6*60, seconds_overdue=8*60)
-    # pooping = DogAction(seconds_warning=18*60, seconds_overdue=24*60)
+    # peeing = DogAction(seconds_warning=6*3, seconds_overdue=8)
+    # pooping = DogAction(seconds_warning=18*3, seconds_overdue=24)
     logfile = os.path.expanduser("~/sheffield-bathroom-log.tsv")
     mqtt_client = None
     timezone = pytz.timezone('America/Chicago')
@@ -307,6 +307,6 @@ class DogStatus(QtCore.QThread):
         client.reconnect()
         msg = client.publish(topic=topic, payload=payload)
         if msg.is_published():
-            log.debug("Message successfully published.")
+            log.debug("Message successfully published to %s.", topic)
         else:
             log.warning("MQTT message not published.")

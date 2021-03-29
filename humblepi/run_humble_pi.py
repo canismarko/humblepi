@@ -22,7 +22,7 @@ def main():
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
-        logfile = Path("~/humlepi.log").expanduser()
+        logfile = Path("~/humblepi.log").expanduser()
         logging.basicConfig(filename=logfile, level=logging.INFO)
     # Create the Qt objections
     app = QtWidgets.QApplication(sys.argv)

@@ -338,8 +338,7 @@ class DogStatus(QtCore.QThread):
             self.wifi_connection_changed.emit(True)
         else:
             # Check if an internet connection is available
-            has_internet = not subprocess.call(["ping", "-c1", "-W0.1", "8.8.8.1"])
-            print(has_internet)
+            has_internet = not subprocess.call(["ping", "-c1", "-W0.1", "8.8.8.8"])
             self.wifi_connection_changed.emit(has_internet)
             self.mqtt_connection_changed.emit(False)
             log.error("MQTT failure.")

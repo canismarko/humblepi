@@ -13,6 +13,16 @@ class PuppyStatusViewTestCase(unittest.TestCase):
     def test_window_init(self):
         view = PuppyStatusView()
         self.assertTrue(view.window.isFullScreen)
+    
+    def test_status_indicators(self):
+        """Test indicators for connection with the internet and MQTT
+        server.
+        
+        """
+        view = PuppyStatusView()
+        status_bar = view.ui.statusbar
+        self.assertIn(view.ui.lblMQTTStatus, status_bar.children())
+        self.assertIn(view.ui.lblWifiStatus, status_bar.children())
 
 
 class ManualAdditionTestCase(unittest.TestCase):

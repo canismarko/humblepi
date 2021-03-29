@@ -3,6 +3,7 @@
 import sys
 import logging
 from pathlib import Path
+import argparse
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
@@ -13,10 +14,16 @@ from humblepi.dogstatus import DogStatus
 
 log = logging.getLogger(__name__)
 
-if __name__ == "__main__":
+
+def main():
+    # Parse command line arguments
+    args = parse_args()
     # Prepare logging
-    logfile = Path("~/humlepi.log").expanduser()
-    logging.basicConfig(filename=logfile, level=logging.INFO)
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logfile = Path("~/humlepi.log").expanduser()
+        logging.basicConfig(filename=logfile, level=logging.INFO)
     # Create the Qt objections
     app = QtWidgets.QApplication(sys.argv)
     puppy_view = PuppyStatusView()
@@ -33,3 +40,15 @@ if __name__ == "__main__":
     puppy_view.show()
     # Execute the Qt app
     sys.exit(app.exec_())
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Show a UI about when the dog last peed/pooped.')
+    parser.add_argument('--debug', '-d', action='store_true',
+                        help='provide additional logging')
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    main()

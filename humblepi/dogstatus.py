@@ -12,6 +12,8 @@ from typing import Optional
 import enum
 import configparser
 import logging
+from traceback import format_exception
+import subprocess
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
@@ -194,6 +196,12 @@ class DogStatus(QtCore.QThread):
     logfile = os.path.expanduser("~/sheffield-bathroom-log.tsv")
     mqtt_client = None
     timezone = pytz.timezone('America/Chicago')
+    mqtt_hostname = None
+    mqtt_port = None
+    
+    # Signals
+    mqtt_connection_changed = pyqtSignal(bool)
+    wifi_connection_changed = pyqtSignal(bool)
     
     def prepare_mqtt(self):
         config = load_config()['MQTT']
@@ -207,8 +215,15 @@ class DogStatus(QtCore.QThread):
             password=config['password'])
         log.debug("Connecting to MQTT server '%s:%d'",
                   config['hostname'], config.getint('port'))
-        self.mqtt_client.connect(host=config['hostname'],
-                                 port=config.getint('port'))
+        self.mqtt_hostname = config['hostname']
+        self.mqtt_port = config['port']
+        try:
+            self.mqtt_client.connect(host=config['hostname'],
+                                     port=config.getint('port'))
+        except Exception as e:
+            self.update_mqtt_status(was_successful=False, exception=e)
+        else:
+            self.update_mqtt_status(was_successful=True)
         # Connect signals for MQTT client
         self.peeing.status_changed.connect(self.update_mqtt)
         self.pooping.status_changed.connect(self.update_mqtt)
@@ -255,13 +270,12 @@ class DogStatus(QtCore.QThread):
           The datetime when the dog last pooped.
         
         """
-       
+        last_poop = None
+        last_out = None       
         # Get default filepath if necessary
         if fpath is None:
             fpath = self.logfile
         if os.path.exists(fpath):
-            last_poop = None
-            last_out = None
             # Convert and apply datetimes
             def format_datetime(when):
                 when = dt.datetime.fromisoformat(when)
@@ -304,9 +318,33 @@ class DogStatus(QtCore.QThread):
         payload = max_state.name
         if client is None:
             client = self.mqtt_client
-        client.reconnect()
-        msg = client.publish(topic=topic, payload=payload)
-        if msg.is_published():
-            log.debug("Message successfully published to %s.", topic)
+        try:
+            client.reconnect()
+            msg = client.publish(topic=topic, payload=payload)
+        except Exception as e:
+            self.update_mqtt_status(False, exception=e)
         else:
-            log.warning("MQTT message not published.")
+            if msg.is_published():
+                self.update_mqtt_status(True)
+                log.debug("Message successfully published to %s.", topic)
+            else:
+                self.update_mqtt_status(False)
+                log.warning("MQTT message not published.")
+    
+    def update_mqtt_status(self, was_successful, exception=None):
+        if was_successful:
+            log.debug("MQTT engaged successfully.")
+            self.mqtt_connection_changed.emit(True)
+            self.wifi_connection_changed.emit(True)
+        else:
+            # Check if an internet connection is available
+            has_internet = not subprocess.call(["ping", "-c1", "-W0.1", "8.8.8.1"])
+            print(has_internet)
+            self.wifi_connection_changed.emit(has_internet)
+            self.mqtt_connection_changed.emit(False)
+            log.error("MQTT failure.")
+        if exception is not None:
+            for chunk in format_exception(None, exception, exception.__traceback__):
+                for line in chunk.split("\n"):
+                    if line.strip():
+                        log.error(line)
